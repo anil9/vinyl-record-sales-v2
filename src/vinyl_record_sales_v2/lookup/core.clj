@@ -1,4 +1,4 @@
-(ns vinyl-record-sales-v2.lookup.lookup
+(ns vinyl-record-sales-v2.lookup.core
   (:require [clj-http.client :as client]
             [clojure.string :as s]))
 
@@ -6,6 +6,7 @@
 
 (def base "https://api.discogs.com/")
 (def database-search "database/search")
+(defn release-search [r] (str "releases/" r))
 (def user-agent "MyDiscogsClient/1.0 +http://mydiscogsclient.org")
 
 (def my-token (str "Discogs token=" (s/trim-newline (slurp "/home/andreas/discogs/api.token"))))
@@ -14,13 +15,18 @@
   {:headers {:user-agent user-agent}
    :as :auto})
 
-(defn create-request [query-params auth-token]
-  (-> client-map
-      (assoc :query-params query-params)
-      (assoc-in [:headers :authorization] auth-token)))
+(defn- create-request
+  ([auth-token]
+   (assoc-in client-map [:headers :authorization] auth-token))
+  ([auth-token query-params]
+   (-> (create-request auth-token)
+       (assoc :query-params query-params))))
 
-(defn query-discogs! [request]
-  (client/get (str base database-search)
+(defn- discogs-url [url]
+  (str base url))
+
+(defn- query-discogs! [url request]
+  (client/get (discogs-url url)
               request))
 
 (defn get-release-id
@@ -34,21 +40,31 @@
       (:id (first potential-results))
       nil)))
 
-(defn get-release-id! [catalogue-num extra-title-words]
-  (let [catno-response (get-in (query-discogs! (create-request {:catno catalogue-num} my-token)) [:body :results])]
-    (get-release-id catno-response extra-title-words)))
-
 (comment
-  (get-release-id! catalogue-num ["skål"])
-  (get-release-id! catalogue-num ["wahlgren"])
-  (def disc-results (get-in (query-discogs! (create-request {:catno catalogue-num} my-token)) [:body :results])
-    (prn disc-results)))
-
-(comment
+  (def disc-results (get-in (query-discogs! database-search (create-request my-token {:catno catalogue-num})) [:body :results])
+      (prn disc-results))
   (get-release-id disc-results ["bröder" "skål"])
   (get-release-id disc-results ["skål"])
   (get-release-id disc-results ["wahlgren"])
   (re-seq #"[a-zåäö]+" "Test string with å ä and ö"))
+
+(defn get-release-id! [catalogue-num extra-title-words]
+  (let [catno-response (get-in (query-discogs! database-search (create-request my-token {:catno catalogue-num})) [:body :results])]
+    (get-release-id catno-response extra-title-words)))
+
+(comment
+  (get-release-id! catalogue-num ["skål"])
+  (get-release-id! catalogue-num ["wahlgren"]))
+
+(defn get-release-info! [release-id]
+  (:body (query-discogs! (release-search release-id) (create-request my-token))))
+
+(comment
+  (def release-response (query-discogs! (release-search 14237528) (create-request my-token)))
+  (query-discogs! (release-search 14237528) (create-request my-token))
+  (get-in release-response [:body :title])
+  (:body release-response) 
+  (get-release-info! 14237528))
 
 (comment
   (slurp (format "http://api.discogs.com/database/search?catno=%s" catalogue-num))
@@ -58,8 +74,8 @@
                          "Authorization" my-token}
                ;:debug true
                :as :json})
-  (:body (query-discogs! (create-request {:catno catalogue-num} my-token)))
-  (get-in (query-discogs! (create-request {:catno catalogue-num} my-token)) [:body :results]))
+  (:body (query-discogs! database-search (create-request my-token {:catno catalogue-num})))
+  (get-in (query-discogs! database-search (create-request my-token {:catno catalogue-num})) [:body :results]))
 
 ; real world result below
 (comment

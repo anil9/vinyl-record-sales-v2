@@ -1,6 +1,6 @@
-(ns vinyl-record-sales-v2.lookup.lookup-test
+(ns vinyl-record-sales-v2.lookup.core-test
   (:require [clojure.test :refer :all]
-            [vinyl-record-sales-v2.lookup.lookup :refer [get-release-id]]))
+            [vinyl-record-sales-v2.lookup.core :refer [get-release-id]]))
 
 (def simple-result [{:id 1 :title "This title is awesome!" :type "release"}
                     {:id 2 :title "This is another title?" :type "release"}
