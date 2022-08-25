@@ -14,9 +14,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Create required directory structure
-    - run: mkdir -p /home/andreas/discogs
+      run: mkdir -p /home/andreas/discogs
     - name: Create required file
-    - run: touch /home/andreas/discogs/api.token
+      run: touch /home/andreas/discogs/api.token
     - name: Install dependencies
       run: lein deps
     - name: Run tests
