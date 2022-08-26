@@ -29,13 +29,16 @@
   (client/get (discogs-url url)
               request))
 
-(defn get-release-id
+(defn contain-all-words? [text words]
+  (every? (into #{} (re-seq #"[a-zåäö]+" (s/lower-case text))) words))
+
+(defn releases-matching-title-words
   "Use catalogue-num (and extra title words) to find the correct release-id"
   [results extra-title-words]
   (let [title-words (map s/lower-case extra-title-words)
         potential-results (->> results
                                (filter #(= "release" (:type %)))
-                               (filter #(every? (into #{} (re-seq #"[a-zåäö]+" (s/lower-case %))) title-words)))]
+                               (filter #(contain-all-words? (:title %) title-words)))]
     (if (= 1 (count (distinct (map #(:title %) potential-results))))
       (:id (first potential-results))
       nil)))
@@ -43,14 +46,15 @@
 (comment
   (def disc-results (get-in (query-discogs! database-search (create-request my-token {:catno catalogue-num})) [:body :results])
       (prn disc-results))
-  (get-release-id disc-results ["bröder" "skål"])
-  (get-release-id disc-results ["skål"])
-  (get-release-id disc-results ["wahlgren"])
+  (releases-matching-title-words disc-results ["bröder" "skål"])
+  (releases-matching-title-words disc-results ["skål"])
+  (releases-matching-title-words disc-results ["wahlgren"])
   (re-seq #"[a-zåäö]+" "Test string with å ä and ö"))
 
 (defn get-release-id! [catalogue-num extra-title-words]
-  (let [catno-response (get-in (query-discogs! database-search (create-request my-token {:catno catalogue-num})) [:body :results])]
-    (get-release-id catno-response extra-title-words)))
+  (let [catno-response (get-in (query-discogs! database-search (create-request my-token {:catno catalogue-num})) [:body :results])
+        releases-matching-title-words (releases-matching-title-words catno-response extra-title-words)]))
+    
 
 (comment
   (get-release-id! catalogue-num ["skål"])

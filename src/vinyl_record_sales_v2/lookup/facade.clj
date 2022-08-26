@@ -8,4 +8,5 @@
       (l/get-release-info! release-id))))
 
 (comment
-  (lookup! "2462 150" ["häck"]))
+  (lookup! "2462 150" ["häck"])
+  (lookup! "2462 150" []))
