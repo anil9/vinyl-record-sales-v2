@@ -35,17 +35,15 @@
 (defn releases-matching-title-words
   "Use catalogue-num (and extra title words) to find the correct release-id"
   [results extra-title-words]
-  (let [title-words (map s/lower-case extra-title-words)
-        potential-results (->> results
-                               (filter #(= "release" (:type %)))
-                               (filter #(contain-all-words? (:title %) title-words)))]
-    (if (= 1 (count (distinct (map #(:title %) potential-results))))
-      (:id (first potential-results))
-      nil)))
+  (let [title-words (map s/lower-case extra-title-words)]
+      (->> results
+                   (filter #(= "release" (:type %)))
+                   (filter #(contain-all-words? (:title %) title-words)))))
+    
 
 (comment
   (def disc-results (get-in (query-discogs! database-search (create-request my-token {:catno catalogue-num})) [:body :results])
-      (prn disc-results))
+    (prn disc-results))
   (releases-matching-title-words disc-results ["bröder" "skål"])
   (releases-matching-title-words disc-results ["skål"])
   (releases-matching-title-words disc-results ["wahlgren"])
@@ -53,8 +51,10 @@
 
 (defn get-release-id! [catalogue-num extra-title-words]
   (let [catno-response (get-in (query-discogs! database-search (create-request my-token {:catno catalogue-num})) [:body :results])
-        releases-matching-title-words (releases-matching-title-words catno-response extra-title-words)]))
-    
+        releases-matching-title-words (releases-matching-title-words catno-response extra-title-words)]
+    (if (= 1 (count (distinct (map #(:title %) releases-matching-title-words))))
+      (:id (first releases-matching-title-words))
+      (println (str "Cant decide on a unique release-id. Try adding more title words. Available titles were " (seq (map :title releases-matching-title-words)))))))
 
 (comment
   (get-release-id! catalogue-num ["skål"])
@@ -67,7 +67,7 @@
   (def release-response (query-discogs! (release-search 14237528) (create-request my-token)))
   (query-discogs! (release-search 14237528) (create-request my-token))
   (get-in release-response [:body :title])
-  (:body release-response) 
+  (:body release-response)
   (get-release-info! 14237528))
 
 (comment
