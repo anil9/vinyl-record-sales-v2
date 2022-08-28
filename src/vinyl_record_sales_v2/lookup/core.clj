@@ -9,7 +9,7 @@
 (defn release-search [r] (str "releases/" r))
 (def user-agent "MyDiscogsClient/1.0 +http://mydiscogsclient.org")
 
-(def my-token (str "Discogs token=" (s/trim-newline (slurp "/home/andreas/discogs/api.token"))))
+(def discogs-token (str "Discogs token=" (s/trim-newline (slurp "/home/andreas/discogs/api.token"))))
 
 (def client-map
   {:headers {:user-agent user-agent}
@@ -42,7 +42,7 @@
     
 
 (comment
-  (def disc-results (get-in (query-discogs! database-search (create-request my-token {:catno catalogue-num})) [:body :results])
+  (def disc-results (get-in (query-discogs! database-search (create-request discogs-token {:catno catalogue-num})) [:body :results])
     (prn disc-results))
   (releases-matching-title-words disc-results ["bröder" "skål"])
   (releases-matching-title-words disc-results ["skål"])
@@ -50,7 +50,7 @@
   (re-seq #"[a-zåäö]+" "Test string with å ä and ö"))
 
 (defn get-release-id! [catalogue-num extra-title-words]
-  (let [catno-response (get-in (query-discogs! database-search (create-request my-token {:catno catalogue-num})) [:body :results])
+  (let [catno-response (get-in (query-discogs! database-search (create-request discogs-token {:catno catalogue-num})) [:body :results])
         releases-matching-title-words (releases-matching-title-words catno-response extra-title-words)]
     (if (= 1 (count (distinct (map #(:title %) releases-matching-title-words))))
       (:id (first releases-matching-title-words))
@@ -61,11 +61,11 @@
   (get-release-id! catalogue-num ["wahlgren"]))
 
 (defn get-release-info! [release-id]
-  (:body (query-discogs! (release-search release-id) (create-request my-token))))
+  (:body (query-discogs! (release-search release-id) (create-request discogs-token))))
 
 (comment
-  (def release-response (query-discogs! (release-search 14237528) (create-request my-token)))
-  (query-discogs! (release-search 14237528) (create-request my-token))
+  (def release-response (query-discogs! (release-search 14237528) (create-request discogs-token)))
+  (query-discogs! (release-search 14237528) (create-request discogs-token))
   (get-in release-response [:body :title])
   (:body release-response)
   (get-release-info! 14237528))
@@ -75,11 +75,11 @@
   (client/get (str base database-search)
               {:query-params {"catno" catalogue-num}
                :headers {"User-Agent" user-agent
-                         "Authorization" my-token}
+                         "Authorization" discogs-token}
                ;:debug true
                :as :json})
-  (:body (query-discogs! database-search (create-request my-token {:catno catalogue-num})))
-  (get-in (query-discogs! database-search (create-request my-token {:catno catalogue-num})) [:body :results]))
+  (:body (query-discogs! database-search (create-request discogs-token {:catno catalogue-num})))
+  (get-in (query-discogs! database-search (create-request discogs-token {:catno catalogue-num})) [:body :results]))
 
 ; real world result below
 (comment
