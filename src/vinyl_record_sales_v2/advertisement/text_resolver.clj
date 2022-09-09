@@ -13,7 +13,7 @@
 (defn join-with 
   [prefix coll]
   (cond
-    (coll? coll) (if (not-empty coll) (str prefix (s/join ", " coll)))
+    (coll? coll) (when (not-empty coll) (str prefix (s/join ", " coll)))
     (some? coll) (str prefix coll)))
 
 (defn resolve-year [record-info]  
@@ -26,5 +26,7 @@
   (join-with "Style: " (:styles record-info)))
 
 (defn create-text [record-info]
-  (s/join "<br>" [(str standard-text "<br>") (resolve-year record-info) (resolve-genre record-info) (resolve-style record-info) (resolve-tracklist record-info)]))
+  (->> [(str standard-text "<br>") (resolve-year record-info) (resolve-genre record-info) (resolve-style record-info) (resolve-tracklist record-info)]
+       (filter some?)
+       (s/join "<br>")))
 

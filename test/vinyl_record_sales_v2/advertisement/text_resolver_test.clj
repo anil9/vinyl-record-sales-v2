@@ -24,8 +24,12 @@
   (is (nil? (join-with "Test: " '()))))
 
 (deftest create-text-test
-  (is (= "Skick se bilder. Ej provspelad. Kolla gärna in mina andra annonser och passa på att buda in fler LP-skivor, jag samfraktar gärna!<br>Fraktpriser (ca):<br>1 skiva 70 kr<br>2 skivor 73 kr<br>3 skivor 76 kr<br>4 skivor 87 kr<br>5 skivor 99 kr<br>6 skivor 102 kr<br>År: 1974<br>Genre: Non-Music<br>Style: Comedy<br>Tracklist:<br>110 Meter Häck<br>Hur Man Än Sig Vänder"
-         (create-text example-record-info))))
+  (testing "Complete example"
+    (is (= "Skick se bilder. Ej provspelad. Kolla gärna in mina andra annonser och passa på att buda in fler LP-skivor, jag samfraktar gärna!<br>Fraktpriser (ca):<br>1 skiva 70 kr<br>2 skivor 73 kr<br>3 skivor 76 kr<br>4 skivor 87 kr<br>5 skivor 99 kr<br>6 skivor 102 kr<br><br>År: 1974<br>Genre: Non-Music<br>Style: Comedy<br>Tracklist:<br>110 Meter Häck<br>Hur Man Än Sig Vänder"
+           (create-text example-record-info))))
+  (testing "Minimal example"
+    (is (= "Skick se bilder. Ej provspelad. Kolla gärna in mina andra annonser och passa på att buda in fler LP-skivor, jag samfraktar gärna!<br>Fraktpriser (ca):<br>1 skiva 70 kr<br>2 skivor 73 kr<br>3 skivor 76 kr<br>4 skivor 87 kr<br>5 skivor 99 kr<br>6 skivor 102 kr<br>"
+           (create-text {})))))
 
 (comment
   (create-text example-record-info))

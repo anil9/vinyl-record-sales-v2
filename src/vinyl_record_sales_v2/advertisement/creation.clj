@@ -1,7 +1,8 @@
 (ns vinyl-record-sales-v2.advertisement.creation
   (:require [clojure.string :as s]
             [clj-http.client :as client]
-            [vinyl-record-sales-v2.advertisement.text-resolver :as text]))
+            [vinyl-record-sales-v2.advertisement.text-resolver :as text]
+            [vinyl-record-sales-v2.advertisement.category-resolver :as category]))
 
 
 (def sello-token (s/trim-newline (slurp "/home/andreas/sello/api.token")))
@@ -36,11 +37,13 @@
    :shipping {(keyword (str tradera-id)) {:pickup true :schenker "70.00"}},
    :quantity 1})
 
+
 (defn create-ad [record-info]
   ;(text/create-text record-info))
   (-> template-ad
       (assoc-in [:texts :default :sv :description] (text/create-text record-info)) 
-      (assoc-in [:texts :default :sv :name] (:title record-info)))) 
+      (assoc-in [:texts :default :sv :name] (:title record-info)) 
+      (assoc-in [:categories :default :id] (category/category-id record-info))))
       
   
 
