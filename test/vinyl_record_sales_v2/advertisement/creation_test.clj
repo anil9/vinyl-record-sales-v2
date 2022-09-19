@@ -15,7 +15,7 @@
                   :tax 25,
                   :folder_id folder-id,
                   :prices {(keyword (str tradera-id)) {:auction {:start 25}, :currency "SEK"}}
-                  :categories {:default {:id 340634}}
+                  :categories {:default {:id 210903}}
                   :condition "used",
                   :shipping {(keyword (str tradera-id)) {:pickup true :schenker "70.00"}},
                   :quantity 1})
