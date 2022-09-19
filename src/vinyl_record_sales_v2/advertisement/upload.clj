@@ -8,7 +8,6 @@
   {:as :auto
    :headers {:authorization sello-token}
    :content-type :json})
-(declare example-ad)
 
 (defn upload-ad! [ad]
   (client/post (str base-url "products")
