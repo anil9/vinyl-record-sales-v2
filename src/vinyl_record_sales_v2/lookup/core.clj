@@ -2,8 +2,6 @@
   (:require [clj-http.client :as client]
             [clojure.string :as s]))
 
-(def catalogue-num "2379 044")
-
 (def base "https://api.discogs.com/")
 (def database-search "database/search")
 (defn release-search [r] (str "releases/" r))
@@ -42,6 +40,7 @@
     
 
 (comment
+  (def catalogue-num "2379 044")
   (def disc-results (get-in (query-discogs! database-search (create-request discogs-token {:catno catalogue-num})) [:body :results])
     (prn disc-results))
   (releases-matching-title-words disc-results ["bröder" "skål"])
@@ -49,16 +48,18 @@
   (releases-matching-title-words disc-results ["wahlgren"])
   (re-seq #"[a-zåäö]+" "Test string with å ä and ö"))
 
-(defn get-release-id! [catalogue-num extra-title-words]
+(defn get-release-meta! [catalogue-num extra-title-words]
   (let [catno-response (get-in (query-discogs! database-search (create-request discogs-token {:catno catalogue-num})) [:body :results])
         releases-matching-title-words (releases-matching-title-words catno-response extra-title-words)]
     (if (= 1 (count (distinct (map #(:title %) releases-matching-title-words))))
-      (:id (first releases-matching-title-words))
+      (select-keys (first releases-matching-title-words) [:id :title])
       (println (str "Cant decide on a unique release-id. Try adding more title words. Available titles were " (seq (map :title releases-matching-title-words)))))))
 
+
 (comment
-  (get-release-id! catalogue-num ["skål"])
-  (get-release-id! catalogue-num ["wahlgren"]))
+  (def catalogue-num "2379 044")
+  (get-release-meta! catalogue-num ["skål"])
+  (get-release-meta! catalogue-num ["wahlgren"]))
 
 (defn get-release-info! [release-id]
   (:body (query-discogs! (release-search release-id) (create-request discogs-token))))
@@ -68,9 +69,10 @@
   (query-discogs! (release-search 14237528) (create-request discogs-token))
   (get-in release-response [:body :title])
   (:body release-response)
-  (get-release-info! 14237528))
+  (get-release-info! 11208352))
 
 (comment
+  (def catalogue-num "2379 044")
   (slurp (format "http://api.discogs.com/database/search?catno=%s" catalogue-num))
   (client/get (str base database-search)
               {:query-params {"catno" catalogue-num}
@@ -79,7 +81,8 @@
                ;:debug true
                :as :json})
   (:body (query-discogs! database-search (create-request discogs-token {:catno catalogue-num})))
-  (get-in (query-discogs! database-search (create-request discogs-token {:catno catalogue-num})) [:body :results]))
+  (get-in (query-discogs! database-search (create-request discogs-token {:catno catalogue-num})) [:body :results])
+  (get-in (query-discogs! database-search (create-request discogs-token {:catno "2462 150"})) [:body :results]))
 
 ; real world result below
 (comment
