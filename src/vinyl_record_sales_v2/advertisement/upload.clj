@@ -13,10 +13,13 @@
   (client/post (str base-url "products")
                (assoc client-map :form-params ad)))
 
+(defn post-image-urls-to-ad! [id image-urls]
+  (client/post (s/join "/" [base-url "products" id "images"])
+               (assoc client-map :form-params {:urls image-urls})))
 
 (comment
-  (client/get (str base-url "products") (assoc-in client-map [:headers :authorization] sello-token))
-  (client/get (str base-url "products/64536005") (assoc-in client-map [:headers :authorization] sello-token)))
+  (def example-ad-id 79021445)
+  (post-image-urls-to-ad! example-ad-id  ["https://res.cloudinary.com/dairr8mgm/image/upload/v1661685801/qr2njhubmai6bea4rlhr.jpg" "https://res.cloudinary.com/dairr8mgm/image/upload/v1661685098/xvg8pbky7hblfnhmzhln.jpg"]))
 
 
 (comment
